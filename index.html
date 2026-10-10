@@ -41,7 +41,6 @@
       overflow-x: hidden;
     }
 
-    /* Cyberpunk Glowing Grid Animation */
     body::before {
       content: '';
       position: absolute;
@@ -79,11 +78,6 @@
       padding: 24px;
       box-shadow: 0 0 30px rgba(0, 255, 204, 0.15), inset 0 0 15px rgba(0, 255, 204, 0.05);
       backdrop-filter: blur(20px);
-      transition: all 0.3s ease;
-    }
-
-    .calculator-card.scientific-active {
-      max-width: 530px;
     }
 
     .header {
@@ -102,25 +96,6 @@
       color: var(--neon-cyan);
       letter-spacing: 2px;
       text-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
-    }
-
-    .mode-toggle-btn {
-      background: transparent;
-      border: 1px solid var(--neon-pink);
-      color: var(--neon-pink);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      font-family: 'Orbitron', sans-serif;
-      letter-spacing: 1px;
-      transition: all 0.2s;
-    }
-
-    .mode-toggle-btn:hover {
-      background: var(--neon-pink);
-      color: #000;
-      box-shadow: 0 0 12px var(--neon-pink);
     }
 
     .display-screen {
@@ -154,19 +129,6 @@
       gap: 10px;
     }
 
-    .scientific-panel {
-      display: none;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
-    }
-
-    .scientific-active .scientific-panel {
-      display: grid;
-    }
-
     .btn {
       height: 54px;
       border-radius: 6px;
@@ -193,19 +155,6 @@
       color: var(--neon-cyan);
       border-color: rgba(0, 255, 204, 0.3);
       background: rgba(0, 255, 204, 0.05);
-    }
-
-    .btn-sci {
-      color: #d8b4fe;
-      border-color: rgba(168, 85, 247, 0.3);
-      background: rgba(168, 85, 247, 0.05);
-      font-size: 1rem;
-    }
-
-    .btn-sci:hover {
-      border-color: #a855f7;
-      color: #a855f7;
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
     }
 
     .btn-clear {
@@ -280,12 +229,9 @@
 </head>
 <body>
 
-  <div class="calculator-card" id="calcCard">
+  <div class="calculator-card">
     <div class="header">
       <div class="app-title"><i class="fa-solid fa-terminal"></i> CYBER_CALC</div>
-      <button class="mode-toggle-btn" id="modeBtn" onclick="toggleScientific()">
-        <span id="modeText">SCI_MODE</span>
-      </button>
     </div>
 
     <div class="display-screen">
@@ -293,21 +239,10 @@
       <div class="current-text" id="currentDisplay">0</div>
     </div>
 
-    <div class="scientific-panel">
-      <button class="btn btn-sci" onclick="appendFunc('sin(')">sin</button>
-      <button class="btn btn-sci" onclick="appendFunc('cos(')">cos</button>
-      <button class="btn btn-sci" onclick="appendFunc('tan(')">tan</button>
-      <button class="btn btn-sci" onclick="appendFunc('log(')">log</button>
-      <button class="btn btn-sci" onclick="appendFunc('sqrt(')">√</button>
-      <button class="btn btn-sci" onclick="appendValue('**')">xⁿ</button>
-      <button class="btn btn-sci" onclick="appendValue('Math.PI')">π</button>
-      <button class="btn btn-sci" onclick="appendValue('Math.E')">e</button>
-    </div>
-
     <div class="keys-grid">
       <button class="btn btn-clear" onclick="clearAll()">AC</button>
       <button class="btn btn-clear" onclick="deleteChar()"><i class="fa-solid fa-delete-left"></i></button>
-      <button class="btn btn-op" onclick="appendPercentage()">%</button>
+      <button class="btn btn-op" onclick="appendValue('%')">%</button>
       <button class="btn btn-op" onclick="appendValue('/')">÷</button>
 
       <button class="btn" onclick="appendValue('7')">7</button>
@@ -344,63 +279,19 @@
     const currentDisplay = document.getElementById('currentDisplay');
     const historyDisplay = document.getElementById('historyDisplay');
     const historyList = document.getElementById('historyList');
-    const calcCard = document.getElementById('calcCard');
-    const modeText = document.getElementById('modeText');
 
     let expression = '';
-    let isScientific = false;
     let shouldResetScreen = false;
-
-    function toggleScientific() {
-      isScientific = !isScientific;
-      calcCard.classList.toggle('scientific-active');
-      modeText.innerText = isScientific ? 'BASIC_MODE' : 'SCI_MODE';
-    }
-
-    function getCurrentNumberLength() {
-      const parts = expression.split(/[\+\-\*\/\%]/);
-      return parts[parts.length - 1].length;
-    }
 
     function appendValue(val) {
       if (shouldResetScreen) {
         expression = '';
         shouldResetScreen = false;
       }
-      if ((val >= '0' && val <= '9') || val === '00') {
-        if (getCurrentNumberLength() >= 6) return;
-      }
       if (currentDisplay.innerText === '0' && val !== '.') {
         expression = '';
       }
       expression += val;
-      updateDisplay();
-    }
-
-    function appendPercentage() {
-      if (!expression) return;
-      try {
-        let currentVal = Function('"use strict"; return (' + expression + ')')();
-        let percentageVal = currentVal / 100;
-        if (typeof percentageVal === 'number' && !Number.isInteger(percentageVal)) {
-          percentageVal = parseFloat(percentageVal.toFixed(6));
-        }
-        expression = percentageVal.toString();
-        shouldResetScreen = true;
-        updateDisplay();
-      } catch (e) {
-        currentDisplay.innerText = 'ERROR';
-        expression = '';
-      }
-    }
-
-    function appendFunc(funcName) {
-      if (shouldResetScreen) {
-        expression = '';
-        shouldResetScreen = false;
-      }
-      if (currentDisplay.innerText === '0') expression = '';
-      expression += funcName;
       updateDisplay();
     }
 
@@ -424,19 +315,10 @@
     function calculateResult() {
       if (!expression) return;
       try {
-        let parsedExpression = expression
-          .replace(/sin\(/g, 'Math.sin(')
-          .replace(/cos\(/g, 'Math.cos(')
-          .replace(/tan\(/g, 'Math.tan(')
-          .replace(/log\(/g, 'Math.log10(')
-          .replace(/sqrt\(/g, 'Math.sqrt(');
-
-        let result = Function('"use strict"; return (' + parsedExpression + ')')();
-        
+        let result = eval(expression.replace(/×/g, '*').replace(/÷/g, '/'));
         if (typeof result === 'number' && !Number.isInteger(result)) {
           result = parseFloat(result.toFixed(6));
         }
-
         historyDisplay.innerText = expression + ' =';
         addHistoryLog(expression, result);
         expression = result.toString();
@@ -464,19 +346,6 @@
     function clearHistory() {
       historyList.innerHTML = '';
     }
-
-    document.addEventListener('keydown', (e) => {
-      if ((e.key >= '0' && e.key <= '9') || ['+', '-', '*', '/', '.'].includes(e.key)) {
-        appendValue(e.key);
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        calculateResult();
-      } else if (e.key === 'Backspace') {
-        deleteChar();
-      } else if (e.key === 'Escape') {
-        clearAll();
-      }
-    });
   </script>
 </body>
 </html>
